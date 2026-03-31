@@ -3,132 +3,154 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>PTO & LWOP Report — Rebecca B.</title>
+<title>PTO Report — Rebecca Bullard</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <style>
-* { margin:0; padding:0; box-sizing:border-box; }
-body { font-family: 'Segoe UI', Arial, sans-serif; background: #f8fafc; color: #1e293b; padding: 24px; }
-h1 { font-size: 1.6rem; margin-bottom: 4px; }
-.subtitle { color: #64748b; margin-bottom: 20px; font-size: 0.95rem; }
-.cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-bottom: 24px; }
-.card { background: #fff; border-radius: 12px; padding: 20px; box-shadow: 0 1px 3px rgba(0,0,0,0.08); }
-.card-label { font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.05em; color: #64748b; margin-bottom: 6px; }
-.card-value { font-size: 1.8rem; font-weight: 700; }
-.card-sub { font-size: 0.85rem; color: #94a3b8; margin-top: 4px; }
-.tabs { display: flex; gap: 4px; margin-bottom: 16px; }
-.tab { padding: 10px 20px; border-radius: 8px 8px 0 0; background: #e2e8f0; cursor: pointer; font-weight: 500; font-size: 0.9rem; border: none; color: #475569; }
-.tab.active { background: #fff; color: #1e293b; box-shadow: 0 -1px 3px rgba(0,0,0,0.06); }
-.chart-container { background: #fff; border-radius: 0 12px 12px 12px; padding: 24px; box-shadow: 0 1px 3px rgba(0,0,0,0.08); }
-.chart-panel { display: none; }
-.chart-panel.active { display: block; }
-canvas { max-height: 400px; }
-.warning-box { background: #fef2f2; border: 1px solid #fecaca; border-radius: 8px; padding: 16px; margin-top: 16px; font-size: 0.9rem; color: #991b1b; }
-.warning-box ul { margin-top: 8px; padding-left: 20px; }
-.warning-box li { margin-bottom: 4px; }
-.lwop-callout { background: #f5f3ff; border: 1px solid #ddd6fe; border-radius: 8px; padding: 16px; margin-top: 16px; font-size: 0.9rem; color: #5b21b6; }
-.footer { margin-top: 24px; font-size: 0.8rem; color: #94a3b8; text-align: center; }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #f8fafc; color: #1e293b; padding: 24px; }
+  .container { max-width: 1100px; margin: 0 auto; }
+  h1 { font-size: 1.75rem; font-weight: 700; margin-bottom: 4px; }
+  .subtitle { color: #64748b; font-size: 0.9rem; margin-bottom: 24px; }
+  .cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; margin-bottom: 28px; }
+  .card { background: #fff; border-radius: 12px; padding: 20px; box-shadow: 0 1px 3px rgba(0,0,0,0.08); }
+  .card-label { font-size: 0.8rem; color: #64748b; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 6px; }
+  .card-value { font-size: 1.6rem; font-weight: 700; }
+  .card-sub { font-size: 0.8rem; color: #94a3b8; margin-top: 2px; }
+  .negative { color: #ef4444; }
+  .positive { color: #10b981; }
+  .purple { color: #7c3aed; }
+  .tabs { display: flex; gap: 4px; margin-bottom: 20px; }
+  .tab { padding: 10px 20px; background: #e2e8f0; border: none; border-radius: 8px 8px 0 0; cursor: pointer; font-size: 0.9rem; font-weight: 500; color: #475569; transition: all 0.15s; }
+  .tab.active { background: #fff; color: #1e293b; box-shadow: 0 -1px 3px rgba(0,0,0,0.06); }
+  .tab:hover { background: #f1f5f9; }
+  .tab.active:hover { background: #fff; }
+  .chart-panel { display: none; background: #fff; border-radius: 0 12px 12px 12px; padding: 24px; box-shadow: 0 1px 3px rgba(0,0,0,0.08); }
+  .chart-panel.active { display: block; }
+  .chart-wrap { position: relative; height: 380px; }
+  .warning-box { margin-top: 16px; background: #fef2f2; border: 1px solid #fecaca; border-radius: 8px; padding: 16px; }
+  .warning-box h3 { font-size: 0.9rem; color: #991b1b; margin-bottom: 8px; }
+  .warning-box ul { list-style: none; padding: 0; }
+  .warning-box li { font-size: 0.85rem; color: #7f1d1d; padding: 3px 0; }
+  .warning-box li::before { content: "⚠ "; }
+  .callout { margin-top: 16px; background: #f5f3ff; border: 1px solid #ddd6fe; border-radius: 8px; padding: 16px; }
+  .callout h3 { font-size: 0.9rem; color: #5b21b6; margin-bottom: 6px; }
+  .callout p { font-size: 0.85rem; color: #6d28d9; }
+  footer { margin-top: 32px; text-align: center; color: #94a3b8; font-size: 0.75rem; }
 </style>
 </head>
 <body>
-<h1>PTO & LWOP Balance Report</h1>
-<p class="subtitle">Rebecca B. &bull; Apr 2025 - Mar 2026 &bull; Accrual Plan: PTO - 8 wks</p>
+<div class="container">
+  <h1>Rebecca Bullard — PTO & LWOP Report</h1>
+  <div class="subtitle">Accrual Plan: PTO - 8 wks &bull; Monthly Accrual: 26.67h &bull; Generated: 2026-03-30</div>
 
-<div class="cards">
-  <div class="card">
-    <div class="card-label">Current PTO Balance</div>
-    <div class="card-value" style="color:#ef4444">-79.1h</div>
-    <div class="card-sub">-9.9 days</div>
-  </div>
-  <div class="card">
-    <div class="card-label">Monthly Accrual Rate</div>
-    <div class="card-value" style="color:#3b82f6">26.67h</div>
-    <div class="card-sub">PTO - 8 wks</div>
-  </div>
-  <div class="card">
-    <div class="card-label">Total LWOP Used</div>
-    <div class="card-value" style="color:#7c3aed">55.0h</div>
-    <div class="card-sub">6.9 days</div>
-  </div>
-  <div class="card">
-    <div class="card-label">Avg Monthly PTO Used</div>
-    <div class="card-value" style="color:#f59e0b">30.2h</div>
-    <div class="card-sub">3.8 days/mo</div>
-  </div>
-</div>
-
-<div class="tabs">
-  <button class="tab active" onclick="showTab(0)">Balance Trend</button>
-  <button class="tab" onclick="showTab(1)">Monthly Breakdown</button>
-  <button class="tab" onclick="showTab(2)">LWOP Analysis</button>
-</div>
-
-<div class="chart-container">
-  <div id="panel0" class="chart-panel active"><canvas id="chart0"></canvas></div>
-  <div id="panel1" class="chart-panel"><canvas id="chart1"></canvas><div class="warning-box"><strong>Months where PTO usage exceeded accrual:</strong><ul><li>Apr 2025: over by 27.8h</li><li>May 2025: over by 0.3h</li><li>Jun 2025: over by 1.8h</li><li>Sep 2025: over by 19.6h</li><li>Oct 2025: over by 3.9h</li><li>Nov 2025: over by 2.4h</li><li>Feb 2026: over by 5.3h</li><li>Mar 2026: over by 26.0h</li></ul></div></div>
-  <div id="panel2" class="chart-panel"><canvas id="chart2"></canvas>
-    <div class="lwop-callout">
-      <strong>LWOP Summary:</strong> 55.0 total hours (6.9 days) of LWOP used during this period.
-      LWOP usage concentrated in Oct–Dec 2025.
+  <div class="cards">
+    <div class="card">
+      <div class="card-label">Current PTO Balance</div>
+      <div class="card-value negative">-76.1h</div>
+      <div class="card-sub">-9.5 days</div>
+    </div>
+    <div class="card">
+      <div class="card-label">Monthly Accrual Rate</div>
+      <div class="card-value">26.67h</div>
+      <div class="card-sub">3.3 days/month</div>
+    </div>
+    <div class="card">
+      <div class="card-label">Total LWOP Used</div>
+      <div class="card-value purple">55.0h</div>
+      <div class="card-sub">6.9 days</div>
+    </div>
+    <div class="card">
+      <div class="card-label">Avg Monthly PTO Used</div>
+      <div class="card-value">35.2h</div>
+      <div class="card-sub">4.4 days/month</div>
     </div>
   </div>
-</div>
 
-<div class="footer">Generated Apr 2025 - Mar 2026 &bull; Data from Unanet</div>
+  <div class="tabs">
+    <button class="tab active" onclick="showTab('balance')">Balance Trend</button>
+    <button class="tab" onclick="showTab('monthly')">Monthly Breakdown</button>
+    <button class="tab" onclick="showTab('lwop')">LWOP Analysis</button>
+  </div>
+
+  <div id="panel-balance" class="chart-panel active">
+    <div class="chart-wrap"><canvas id="chartBalance"></canvas></div>
+  </div>
+
+  <div id="panel-monthly" class="chart-panel">
+    <div class="chart-wrap"><canvas id="chartMonthly"></canvas></div>
+    <div class="warning-box"><h3>Months Where PTO Usage Exceeded Accrual</h3><ul><li>Apr 2025: used 117.0h vs accrued 80.06h (over by 36.9h)</li><li>May 2025: used 27.0h vs accrued 26.67h (over by 0.3h)</li><li>Jun 2025: used 28.5h vs accrued 26.67h (over by 1.8h)</li><li>Sep 2025: used 46.25h vs accrued 26.67h (over by 19.6h)</li><li>Oct 2025: used 28.0h vs accrued 24.13h (over by 3.9h)</li><li>Nov 2025: used 24.0h vs accrued 21.59h (over by 2.4h)</li><li>Feb 2026: used 32.0h vs accrued 26.67h (over by 5.3h)</li><li>Mar 2026: used 23.0h vs accrued 0.0h (over by 23.0h)</li></ul></div>
+  </div>
+
+  <div id="panel-lwop" class="chart-panel">
+    <div class="chart-wrap"><canvas id="chartLwop"></canvas></div>
+    <div class="callout">
+      <h3>LWOP Summary</h3>
+      <p>Total LWOP in period: <strong>55.0h (6.9 days)</strong>.
+      LWOP was used in 3 of 12 months, concentrated in Oct–Dec 2025.</p>
+    </div>
+  </div>
+
+  <footer>Reflexive Concepts, LLC &bull; Data from Unanet &bull; Report generated 2026-03-30</footer>
+</div>
 
 <script>
 const labels = ["Apr 2025", "May 2025", "Jun 2025", "Jul 2025", "Aug 2025", "Sep 2025", "Oct 2025", "Nov 2025", "Dec 2025", "Jan 2026", "Feb 2026", "Mar 2026"];
-const balance = [-36.94, -37.27, -39.1, -33.93, -32.26, -51.84, -55.71, -58.12, -53.96, -47.79, -53.12, -79.12];
+const balances = [-36.94, -37.27, -39.1, -33.93, -32.26, -51.84, -55.71, -58.12, -53.96, -47.79, -53.12, -76.12];
 const cumLwop = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 17.5, 48.0, 55.0, 55.0, 55.0, 55.0];
-const monAccrued = [26.67, 26.67, 26.67, 26.67, 34.67, 26.67, 24.13, 21.59, 25.66, 26.67, 26.67, 0.0];
-const monUsed = [54.5, 27.0, 28.5, 21.5, 33.0, 46.25, 28.0, 24.0, 21.5, 20.5, 32.0, 26.0];
-const monLwop = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 17.5, 30.5, 7.0, 0.0, 0.0, 0.0];
+const moAccrued = [80.06, 26.67, 26.67, 26.67, 34.67, 26.67, 24.13, 21.59, 25.66, 26.67, 26.67, 0.0];
+const moUsed = [117.0, 27.0, 28.5, 21.5, 33.0, 46.25, 28.0, 24.0, 21.5, 20.5, 32.0, 23.0];
+const moLwop = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 17.5, 30.5, 7.0, 0.0, 0.0, 0.0];
 const usedColors = ["#ef4444", "#ef4444", "#ef4444", "#f59e0b", "#f59e0b", "#ef4444", "#ef4444", "#ef4444", "#f59e0b", "#f59e0b", "#ef4444", "#ef4444"];
-const lwopCum = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 17.5, 48.0, 55.0, 55.0, 55.0, 55.0];
 
-function showTab(i) {
-  document.querySelectorAll('.tab').forEach((t,idx)=>t.classList.toggle('active',idx===i));
-  document.querySelectorAll('.chart-panel').forEach((p,idx)=>p.classList.toggle('active',idx===i));
+function showTab(name) {
+  document.querySelectorAll('.chart-panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('panel-' + name).classList.add('active');
+  event.target.classList.add('active');
 }
 
-// Chart 0: Balance Trend
-new Chart(document.getElementById('chart0'), {
+// Balance Trend
+new Chart(document.getElementById('chartBalance'), {
   type: 'line',
   data: {
-    labels,
+    labels: labels,
     datasets: [
       {
         label: 'PTO Balance (hrs)',
-        data: balance,
+        data: balances,
         borderColor: '#ef4444',
-        backgroundColor: 'rgba(239,68,68,0.1)',
+        backgroundColor: 'rgba(239,68,68,0.08)',
         fill: true,
         tension: 0.3,
         pointRadius: 5,
         pointBackgroundColor: '#ef4444',
-        order: 1
+        borderWidth: 2.5
       },
       {
-        label: 'Monthly LWOP (hrs)',
-        data: monLwop,
+        label: 'Cumulative LWOP (hrs)',
+        data: cumLwop,
         type: 'bar',
-        backgroundColor: 'rgba(124,58,237,0.5)',
+        backgroundColor: 'rgba(124,58,237,0.35)',
         borderColor: '#7c3aed',
         borderWidth: 1,
-        order: 2
+        barPercentage: 0.4,
+        order: 1
       }
     ]
   },
   options: {
     responsive: true,
+    maintainAspectRatio: false,
     plugins: {
-      legend: { position: 'top' },
-      title: { display: true, text: 'PTO Balance Trend with LWOP', font: { size: 16 } }
+      annotation: undefined,
+      legend: { position: 'top' }
     },
     scales: {
       y: {
         title: { display: true, text: 'Hours' },
         grid: { color: '#f1f5f9' }
-      }
+      },
+      x: { grid: { display: false } }
     }
   },
   plugins: [{
@@ -136,97 +158,115 @@ new Chart(document.getElementById('chart0'), {
     afterDraw(chart) {
       const yScale = chart.scales.y;
       const ctx = chart.ctx;
-      const y = yScale.getPixelForValue(0);
+      const yZero = yScale.getPixelForValue(0);
       ctx.save();
       ctx.strokeStyle = '#94a3b8';
       ctx.lineWidth = 1;
       ctx.setLineDash([6, 4]);
       ctx.beginPath();
-      ctx.moveTo(chart.chartArea.left, y);
-      ctx.lineTo(chart.chartArea.right, y);
+      ctx.moveTo(chart.chartArea.left, yZero);
+      ctx.lineTo(chart.chartArea.right, yZero);
       ctx.stroke();
       ctx.restore();
     }
   }]
 });
 
-// Chart 1: Monthly Breakdown
-new Chart(document.getElementById('chart1'), {
+// Monthly Breakdown
+new Chart(document.getElementById('chartMonthly'), {
   type: 'bar',
   data: {
-    labels,
+    labels: labels,
     datasets: [
       {
         label: 'PTO Accrued',
-        data: monAccrued,
-        backgroundColor: '#3b82f6'
+        data: moAccrued.map(v => Math.max(v, 0)),
+        backgroundColor: '#3b82f6',
+        borderRadius: 4,
+        barPercentage: 0.7,
+        categoryPercentage: 0.8
       },
       {
         label: 'PTO Used',
-        data: monUsed,
-        backgroundColor: usedColors
+        data: moUsed,
+        backgroundColor: usedColors,
+        borderRadius: 4,
+        barPercentage: 0.7,
+        categoryPercentage: 0.8
       },
       {
         label: 'LWOP',
-        data: monLwop,
-        backgroundColor: '#7c3aed'
+        data: moLwop,
+        backgroundColor: 'rgba(124,58,237,0.5)',
+        borderColor: '#7c3aed',
+        borderWidth: 1,
+        borderRadius: 4,
+        barPercentage: 0.7,
+        categoryPercentage: 0.8
       }
     ]
   },
   options: {
     responsive: true,
-    plugins: {
-      legend: { position: 'top' },
-      title: { display: true, text: 'Monthly PTO Accrued vs Used + LWOP', font: { size: 16 } }
-    },
+    maintainAspectRatio: false,
+    plugins: { legend: { position: 'top' } },
     scales: {
       y: {
         title: { display: true, text: 'Hours' },
-        grid: { color: '#f1f5f9' }
-      }
+        grid: { color: '#f1f5f9' },
+        beginAtZero: true
+      },
+      x: { grid: { display: false } }
     }
   }
 });
 
-// Chart 2: LWOP Analysis
-new Chart(document.getElementById('chart2'), {
+// LWOP Analysis
+new Chart(document.getElementById('chartLwop'), {
   type: 'bar',
   data: {
-    labels,
+    labels: labels,
     datasets: [
       {
         label: 'Monthly LWOP (hrs)',
-        data: monLwop,
-        backgroundColor: 'rgba(124,58,237,0.5)',
+        data: moLwop,
+        backgroundColor: 'rgba(124,58,237,0.45)',
         borderColor: '#7c3aed',
         borderWidth: 1,
-        order: 2
+        borderRadius: 4
       },
       {
         label: 'Cumulative LWOP (hrs)',
-        data: lwopCum,
+        data: cumLwop,
         type: 'line',
         borderColor: '#7c3aed',
-        backgroundColor: 'rgba(124,58,237,0.1)',
+        backgroundColor: 'rgba(124,58,237,0.08)',
         fill: true,
         tension: 0.3,
-        pointRadius: 5,
+        pointRadius: 4,
         pointBackgroundColor: '#7c3aed',
-        order: 1
+        borderWidth: 2,
+        yAxisID: 'y1'
       }
     ]
   },
   options: {
     responsive: true,
-    plugins: {
-      legend: { position: 'top' },
-      title: { display: true, text: 'LWOP Analysis — Monthly and Cumulative', font: { size: 16 } }
-    },
+    maintainAspectRatio: false,
+    plugins: { legend: { position: 'top' } },
     scales: {
       y: {
-        title: { display: true, text: 'Hours' },
-        grid: { color: '#f1f5f9' }
-      }
+        title: { display: true, text: 'Monthly (hrs)' },
+        grid: { color: '#f1f5f9' },
+        beginAtZero: true
+      },
+      y1: {
+        position: 'right',
+        title: { display: true, text: 'Cumulative (hrs)' },
+        grid: { display: false },
+        beginAtZero: true
+      },
+      x: { grid: { display: false } }
     }
   }
 });
