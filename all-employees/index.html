@@ -1,0 +1,678 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Negative PTO Balance Report — Reflexive Concepts</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #f8fafc; color: #1e293b; padding: 24px; }
+  .container { max-width: 1100px; margin: 0 auto; }
+  h1 { font-size: 1.75rem; font-weight: 700; margin-bottom: 4px; }
+  h2 { font-size: 1.4rem; font-weight: 700; margin-bottom: 4px; }
+  .subtitle { color: #64748b; font-size: 0.9rem; margin-bottom: 20px; }
+  .badge { display: inline-block; background: #fef2f2; color: #991b1b; font-weight: 600; padding: 4px 12px; border-radius: 20px; font-size: 0.85rem; margin-bottom: 20px; }
+
+  /* Summary table */
+  .summary-table { width: 100%; border-collapse: separate; border-spacing: 0; background: #fff; border-radius: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.08); overflow: hidden; margin-bottom: 28px; }
+  .summary-table th { background: #f1f5f9; padding: 12px 16px; text-align: left; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em; color: #64748b; }
+  .summary-table td { padding: 12px 16px; border-top: 1px solid #f1f5f9; font-size: 0.9rem; }
+  .emp-row:hover { background: #f8fafc; }
+  .emp-row.critical td:first-child { border-left: 3px solid #ef4444; }
+  .emp-row.warning td:first-child { border-left: 3px solid #f59e0b; }
+  .emp-row.minor td:first-child { border-left: 3px solid #fbbf24; }
+  .name-cell { font-weight: 600; }
+  .num-cell { font-variant-numeric: tabular-nums; text-align: right; }
+  .plan-cell { color: #64748b; font-size: 0.85rem; }
+
+  /* Cards */
+  .cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 14px; margin-bottom: 24px; }
+  .card { background: #fff; border-radius: 12px; padding: 18px; box-shadow: 0 1px 3px rgba(0,0,0,0.08); }
+  .card-label { font-size: 0.75rem; color: #64748b; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 5px; }
+  .card-value { font-size: 1.5rem; font-weight: 700; }
+  .card-sub { font-size: 0.8rem; color: #94a3b8; margin-top: 2px; }
+  .negative { color: #ef4444; }
+  .positive { color: #10b981; }
+  .purple { color: #7c3aed; }
+
+  /* Tabs & Charts */
+  .tab-row { display: flex; gap: 4px; margin-bottom: 16px; }
+  .tab { padding: 9px 18px; background: #e2e8f0; border: none; border-radius: 8px 8px 0 0; cursor: pointer; font-size: 0.85rem; font-weight: 500; color: #475569; }
+  .tab.active { background: #fff; color: #1e293b; box-shadow: 0 -1px 3px rgba(0,0,0,0.06); }
+  .tab:hover { background: #f1f5f9; }
+  .tab.active:hover { background: #fff; }
+  .chart-panel { display: none; background: #fff; border-radius: 0 12px 12px 12px; padding: 20px; box-shadow: 0 1px 3px rgba(0,0,0,0.08); margin-bottom: 20px; }
+  .chart-panel.active { display: block; }
+  .chart-wrap { position: relative; height: 340px; }
+
+  .warning-box { margin-top: 14px; background: #fef2f2; border: 1px solid #fecaca; border-radius: 8px; padding: 14px; }
+  .warning-box h3 { font-size: 0.85rem; color: #991b1b; margin-bottom: 6px; }
+  .warning-box ul { list-style: none; padding: 0; }
+  .warning-box li { font-size: 0.8rem; color: #7f1d1d; padding: 2px 0; }
+  .warning-box li::before { content: "⚠ "; }
+  .callout { margin-top: 14px; background: #f5f3ff; border: 1px solid #ddd6fe; border-radius: 8px; padding: 14px; }
+  .callout h3 { font-size: 0.85rem; color: #5b21b6; margin-bottom: 4px; }
+  .callout p { font-size: 0.8rem; color: #6d28d9; }
+
+  .back-btn { background: none; border: 1px solid #cbd5e1; border-radius: 6px; padding: 6px 14px; cursor: pointer; font-size: 0.85rem; color: #475569; margin-bottom: 12px; }
+  .back-btn:hover { background: #f1f5f9; }
+  .detail-header { margin-bottom: 16px; }
+  footer { margin-top: 32px; text-align: center; color: #94a3b8; font-size: 0.75rem; }
+</style>
+</head>
+<body>
+<div class="container">
+  <div id="summary-view">
+    <h1>Negative PTO Balance Report</h1>
+    <div class="subtitle">Reflexive Concepts, LLC &bull; Generated: 2026-03-31</div>
+    <div class="badge">10 employees with negative PTO balance</div>
+    <table class="summary-table">
+      <thead>
+        <tr>
+          <th>Employee</th>
+          <th style="text-align:right">Balance (hrs)</th>
+          <th style="text-align:right">Balance (days)</th>
+          <th style="text-align:right">Accrual Rate</th>
+          <th style="text-align:right">LWOP Used</th>
+          <th>Plan</th>
+        </tr>
+      </thead>
+      <tbody>
+      <tr class="emp-row critical" onclick="showEmployee(0)" style="cursor:pointer">
+        <td class="name-cell">Rebecca Bullard</td>
+        <td class="num-cell negative">-79.1h</td>
+        <td class="num-cell negative">-9.9d</td>
+        <td class="num-cell">26.67h</td>
+        <td class="num-cell purple">55.0h</td>
+        <td class="plan-cell">PTO - 8 wks</td>
+      </tr>
+      <tr class="emp-row critical" onclick="showEmployee(1)" style="cursor:pointer">
+        <td class="name-cell">Leann Bortner</td>
+        <td class="num-cell negative">-77.2h</td>
+        <td class="num-cell negative">-9.7d</td>
+        <td class="num-cell">26.67h</td>
+        <td class="num-cell purple">15.1h</td>
+        <td class="plan-cell">PTO - 8 wks</td>
+      </tr>
+      <tr class="emp-row critical" onclick="showEmployee(2)" style="cursor:pointer">
+        <td class="name-cell">Daniel Ahn</td>
+        <td class="num-cell negative">-63.5h</td>
+        <td class="num-cell negative">-7.9d</td>
+        <td class="num-cell">0h</td>
+        <td class="num-cell ">0.0h</td>
+        <td class="plan-cell">PTO</td>
+      </tr>
+      <tr class="emp-row critical" onclick="showEmployee(3)" style="cursor:pointer">
+        <td class="name-cell">Cody Duffy</td>
+        <td class="num-cell negative">-56.8h</td>
+        <td class="num-cell negative">-7.1d</td>
+        <td class="num-cell">26.67h</td>
+        <td class="num-cell ">0.0h</td>
+        <td class="plan-cell">PTO - 8 wks</td>
+      </tr>
+      <tr class="emp-row warning" onclick="showEmployee(4)" style="cursor:pointer">
+        <td class="name-cell">Andreas Hochmuth</td>
+        <td class="num-cell negative">-37.2h</td>
+        <td class="num-cell negative">-4.6d</td>
+        <td class="num-cell">0h</td>
+        <td class="num-cell ">0.0h</td>
+        <td class="plan-cell">PTO</td>
+      </tr>
+      <tr class="emp-row warning" onclick="showEmployee(5)" style="cursor:pointer">
+        <td class="name-cell">Larry Ingram</td>
+        <td class="num-cell negative">-34.4h</td>
+        <td class="num-cell negative">-4.3d</td>
+        <td class="num-cell">0h</td>
+        <td class="num-cell purple">48.0h</td>
+        <td class="plan-cell">PTO</td>
+      </tr>
+      <tr class="emp-row minor" onclick="showEmployee(6)" style="cursor:pointer">
+        <td class="name-cell">Jackson Gabriel</td>
+        <td class="num-cell negative">-19.9h</td>
+        <td class="num-cell negative">-2.5d</td>
+        <td class="num-cell">0h</td>
+        <td class="num-cell ">0.0h</td>
+        <td class="plan-cell">PTO</td>
+      </tr>
+      <tr class="emp-row minor" onclick="showEmployee(7)" style="cursor:pointer">
+        <td class="name-cell">Ashley Dear</td>
+        <td class="num-cell negative">-15.8h</td>
+        <td class="num-cell negative">-2.0d</td>
+        <td class="num-cell">20.0h</td>
+        <td class="num-cell ">0.0h</td>
+        <td class="plan-cell">PTO - 6 wks</td>
+      </tr>
+      <tr class="emp-row minor" onclick="showEmployee(8)" style="cursor:pointer">
+        <td class="name-cell">Christopher Gomez</td>
+        <td class="num-cell negative">-8.6h</td>
+        <td class="num-cell negative">-1.1d</td>
+        <td class="num-cell">0h</td>
+        <td class="num-cell ">0.0h</td>
+        <td class="plan-cell">PTO</td>
+      </tr>
+      <tr class="emp-row minor" onclick="showEmployee(9)" style="cursor:pointer">
+        <td class="name-cell">Thomas Kersch</td>
+        <td class="num-cell negative">-5.9h</td>
+        <td class="num-cell negative">-0.7d</td>
+        <td class="num-cell">0h</td>
+        <td class="num-cell ">0.0h</td>
+        <td class="plan-cell">PTO</td>
+      </tr>
+      </tbody>
+    </table>
+    <p style="color:#94a3b8; font-size:0.8rem; margin-top:8px;">Click any row to see the 12-month detail view.</p>
+  </div>
+
+  
+    <div id="emp-0" class="emp-detail" style="display:none">
+      <div class="detail-header">
+        <button onclick="backToSummary()" class="back-btn">&larr; Back to Summary</button>
+        <h2>Rebecca Bullard</h2>
+        <div class="subtitle">Plan: PTO - 8 wks &bull; Accrual Start: 2024-12-02</div>
+      </div>
+      <div class="cards">
+        <div class="card">
+          <div class="card-label">PTO Balance</div>
+          <div class="card-value negative">-79.1h</div>
+          <div class="card-sub">-9.9 days</div>
+        </div>
+        <div class="card">
+          <div class="card-label">Monthly Accrual</div>
+          <div class="card-value">26.67h</div>
+          <div class="card-sub">3.3 days/mo</div>
+        </div>
+        <div class="card">
+          <div class="card-label">LWOP Used</div>
+          <div class="card-value purple">55.0h</div>
+          <div class="card-sub">6.9 days</div>
+        </div>
+        <div class="card">
+          <div class="card-label">Avg Monthly Usage</div>
+          <div class="card-value">35.4h</div>
+          <div class="card-sub">4.4 days/mo</div>
+        </div>
+      </div>
+      <div class="tab-row">
+        <button class="tab active" onclick="showEmpTab(0,'balance',this)">Balance Trend</button>
+        <button class="tab" onclick="showEmpTab(0,'monthly',this)">Monthly Breakdown</button>
+        <button class="tab" onclick="showEmpTab(0,'lwop',this)">LWOP Analysis</button>
+      </div>
+      <div id="emp-0-balance" class="chart-panel active"><div class="chart-wrap"><canvas id="chart-0-balance"></canvas></div></div>
+      <div id="emp-0-monthly" class="chart-panel"><div class="chart-wrap"><canvas id="chart-0-monthly"></canvas></div><div class="warning-box"><h3>Months Exceeding Accrual</h3><ul><li>Apr 2025: used 117.0h (over by 36.9h)</li><li>May 2025: used 27.0h (over by 0.3h)</li><li>Jun 2025: used 28.5h (over by 1.8h)</li><li>Sep 2025: used 46.25h (over by 19.6h)</li><li>Oct 2025: used 28.0h (over by 3.9h)</li><li>Nov 2025: used 24.0h (over by 2.4h)</li><li>Feb 2026: used 32.0h (over by 5.3h)</li><li>Mar 2026: used 26.0h (over by 26.0h)</li></ul></div></div>
+      <div id="emp-0-lwop" class="chart-panel"><div class="chart-wrap"><canvas id="chart-0-lwop"></canvas></div><div class="callout"><h3>LWOP Summary</h3><p>Total: <strong>55.0h (6.9 days)</strong> across 3 month(s).</p></div></div>
+    </div>
+    <div id="emp-1" class="emp-detail" style="display:none">
+      <div class="detail-header">
+        <button onclick="backToSummary()" class="back-btn">&larr; Back to Summary</button>
+        <h2>Leann Bortner</h2>
+        <div class="subtitle">Plan: PTO - 8 wks &bull; Accrual Start: 2024-01-01</div>
+      </div>
+      <div class="cards">
+        <div class="card">
+          <div class="card-label">PTO Balance</div>
+          <div class="card-value negative">-77.2h</div>
+          <div class="card-sub">-9.7 days</div>
+        </div>
+        <div class="card">
+          <div class="card-label">Monthly Accrual</div>
+          <div class="card-value">26.67h</div>
+          <div class="card-sub">3.3 days/mo</div>
+        </div>
+        <div class="card">
+          <div class="card-label">LWOP Used</div>
+          <div class="card-value purple">15.1h</div>
+          <div class="card-sub">1.9 days</div>
+        </div>
+        <div class="card">
+          <div class="card-label">Avg Monthly Usage</div>
+          <div class="card-value">64.4h</div>
+          <div class="card-sub">8.1 days/mo</div>
+        </div>
+      </div>
+      <div class="tab-row">
+        <button class="tab active" onclick="showEmpTab(1,'balance',this)">Balance Trend</button>
+        <button class="tab" onclick="showEmpTab(1,'monthly',this)">Monthly Breakdown</button>
+        <button class="tab" onclick="showEmpTab(1,'lwop',this)">LWOP Analysis</button>
+      </div>
+      <div id="emp-1-balance" class="chart-panel active"><div class="chart-wrap"><canvas id="chart-1-balance"></canvas></div></div>
+      <div id="emp-1-monthly" class="chart-panel"><div class="chart-wrap"><canvas id="chart-1-monthly"></canvas></div><div class="warning-box"><h3>Months Exceeding Accrual</h3><ul><li>Apr 2025: used 483.5h (over by 63.1h)</li><li>May 2025: used 33.0h (over by 6.3h)</li><li>Jul 2025: used 38.5h (over by 11.8h)</li><li>Sep 2025: used 49.0h (over by 22.3h)</li><li>Oct 2025: used 26.95h (over by 2.4h)</li><li>Jan 2026: used 33.0h (over by 6.3h)</li></ul></div></div>
+      <div id="emp-1-lwop" class="chart-panel"><div class="chart-wrap"><canvas id="chart-1-lwop"></canvas></div><div class="callout"><h3>LWOP Summary</h3><p>Total: <strong>15.1h (1.9 days)</strong> across 1 month(s).</p></div></div>
+    </div>
+    <div id="emp-2" class="emp-detail" style="display:none">
+      <div class="detail-header">
+        <button onclick="backToSummary()" class="back-btn">&larr; Back to Summary</button>
+        <h2>Daniel Ahn</h2>
+        <div class="subtitle">Plan: PTO &bull; Accrual Start: 2024-01-01</div>
+      </div>
+      <div class="cards">
+        <div class="card">
+          <div class="card-label">PTO Balance</div>
+          <div class="card-value negative">-63.5h</div>
+          <div class="card-sub">-7.9 days</div>
+        </div>
+        <div class="card">
+          <div class="card-label">Monthly Accrual</div>
+          <div class="card-value">0h</div>
+          <div class="card-sub">0.0 days/mo</div>
+        </div>
+        <div class="card">
+          <div class="card-label">LWOP Used</div>
+          <div class="card-value ">0.0h</div>
+          <div class="card-sub">0.0 days</div>
+        </div>
+        <div class="card">
+          <div class="card-label">Avg Monthly Usage</div>
+          <div class="card-value">35.8h</div>
+          <div class="card-sub">4.5 days/mo</div>
+        </div>
+      </div>
+      <div class="tab-row">
+        <button class="tab active" onclick="showEmpTab(2,'balance',this)">Balance Trend</button>
+        <button class="tab" onclick="showEmpTab(2,'monthly',this)">Monthly Breakdown</button>
+        <button class="tab" onclick="showEmpTab(2,'lwop',this)">LWOP Analysis</button>
+      </div>
+      <div id="emp-2-balance" class="chart-panel active"><div class="chart-wrap"><canvas id="chart-2-balance"></canvas></div></div>
+      <div id="emp-2-monthly" class="chart-panel"><div class="chart-wrap"><canvas id="chart-2-monthly"></canvas></div><div class="warning-box"><h3>Months Exceeding Accrual</h3><ul><li>Apr 2025: used 284.5h (over by 52.3h)</li><li>May 2025: used 14.0h (over by 0.7h)</li><li>Aug 2025: used 23.0h (over by 9.7h)</li><li>Dec 2025: used 32.0h (over by 18.7h)</li><li>Jan 2026: used 17.5h (over by 4.2h)</li><li>Feb 2026: used 27.0h (over by 13.7h)</li><li>Mar 2026: used 16.0h (over by 16.0h)</li></ul></div></div>
+      <div id="emp-2-lwop" class="chart-panel"><div class="chart-wrap"><canvas id="chart-2-lwop"></canvas></div></div>
+    </div>
+    <div id="emp-3" class="emp-detail" style="display:none">
+      <div class="detail-header">
+        <button onclick="backToSummary()" class="back-btn">&larr; Back to Summary</button>
+        <h2>Cody Duffy</h2>
+        <div class="subtitle">Plan: PTO - 8 wks &bull; Accrual Start: 2025-12-31</div>
+      </div>
+      <div class="cards">
+        <div class="card">
+          <div class="card-label">PTO Balance</div>
+          <div class="card-value negative">-56.8h</div>
+          <div class="card-sub">-7.1 days</div>
+        </div>
+        <div class="card">
+          <div class="card-label">Monthly Accrual</div>
+          <div class="card-value">26.67h</div>
+          <div class="card-sub">3.3 days/mo</div>
+        </div>
+        <div class="card">
+          <div class="card-label">LWOP Used</div>
+          <div class="card-value ">0.0h</div>
+          <div class="card-sub">0.0 days</div>
+        </div>
+        <div class="card">
+          <div class="card-label">Avg Monthly Usage</div>
+          <div class="card-value">3.4h</div>
+          <div class="card-sub">0.4 days/mo</div>
+        </div>
+      </div>
+      <div class="tab-row">
+        <button class="tab active" onclick="showEmpTab(3,'balance',this)">Balance Trend</button>
+        <button class="tab" onclick="showEmpTab(3,'monthly',this)">Monthly Breakdown</button>
+        <button class="tab" onclick="showEmpTab(3,'lwop',this)">LWOP Analysis</button>
+      </div>
+      <div id="emp-3-balance" class="chart-panel active"><div class="chart-wrap"><canvas id="chart-3-balance"></canvas></div></div>
+      <div id="emp-3-monthly" class="chart-panel"><div class="chart-wrap"><canvas id="chart-3-monthly"></canvas></div><div class="warning-box"><h3>Months Exceeding Accrual</h3><ul><li>Dec 2025: used 1.5h (over by 1.5h)</li><li>Jan 2026: used 28.0h (over by 1.3h)</li></ul></div></div>
+      <div id="emp-3-lwop" class="chart-panel"><div class="chart-wrap"><canvas id="chart-3-lwop"></canvas></div></div>
+    </div>
+    <div id="emp-4" class="emp-detail" style="display:none">
+      <div class="detail-header">
+        <button onclick="backToSummary()" class="back-btn">&larr; Back to Summary</button>
+        <h2>Andreas Hochmuth</h2>
+        <div class="subtitle">Plan: PTO &bull; Accrual Start: 2024-08-26</div>
+      </div>
+      <div class="cards">
+        <div class="card">
+          <div class="card-label">PTO Balance</div>
+          <div class="card-value negative">-37.2h</div>
+          <div class="card-sub">-4.6 days</div>
+        </div>
+        <div class="card">
+          <div class="card-label">Monthly Accrual</div>
+          <div class="card-value">0h</div>
+          <div class="card-sub">0.0 days/mo</div>
+        </div>
+        <div class="card">
+          <div class="card-label">LWOP Used</div>
+          <div class="card-value ">0.0h</div>
+          <div class="card-sub">0.0 days</div>
+        </div>
+        <div class="card">
+          <div class="card-label">Avg Monthly Usage</div>
+          <div class="card-value">23.4h</div>
+          <div class="card-sub">2.9 days/mo</div>
+        </div>
+      </div>
+      <div class="tab-row">
+        <button class="tab active" onclick="showEmpTab(4,'balance',this)">Balance Trend</button>
+        <button class="tab" onclick="showEmpTab(4,'monthly',this)">Monthly Breakdown</button>
+        <button class="tab" onclick="showEmpTab(4,'lwop',this)">LWOP Analysis</button>
+      </div>
+      <div id="emp-4-balance" class="chart-panel active"><div class="chart-wrap"><canvas id="chart-4-balance"></canvas></div></div>
+      <div id="emp-4-monthly" class="chart-panel"><div class="chart-wrap"><canvas id="chart-4-monthly"></canvas></div><div class="warning-box"><h3>Months Exceeding Accrual</h3><ul><li>Apr 2025: used 169.0h (over by 59.3h)</li><li>Jun 2025: used 13.5h (over by 0.2h)</li><li>Aug 2025: used 13.5h (over by 0.2h)</li><li>Nov 2025: used 20.0h (over by 6.7h)</li><li>Dec 2025: used 15.5h (over by 2.2h)</li><li>Jan 2026: used 14.75h (over by 1.4h)</li></ul></div></div>
+      <div id="emp-4-lwop" class="chart-panel"><div class="chart-wrap"><canvas id="chart-4-lwop"></canvas></div></div>
+    </div>
+    <div id="emp-5" class="emp-detail" style="display:none">
+      <div class="detail-header">
+        <button onclick="backToSummary()" class="back-btn">&larr; Back to Summary</button>
+        <h2>Larry Ingram</h2>
+        <div class="subtitle">Plan: PTO &bull; Accrual Start: 2024-10-07</div>
+      </div>
+      <div class="cards">
+        <div class="card">
+          <div class="card-label">PTO Balance</div>
+          <div class="card-value negative">-34.4h</div>
+          <div class="card-sub">-4.3 days</div>
+        </div>
+        <div class="card">
+          <div class="card-label">Monthly Accrual</div>
+          <div class="card-value">0h</div>
+          <div class="card-sub">0.0 days/mo</div>
+        </div>
+        <div class="card">
+          <div class="card-label">LWOP Used</div>
+          <div class="card-value purple">48.0h</div>
+          <div class="card-sub">6.0 days</div>
+        </div>
+        <div class="card">
+          <div class="card-label">Avg Monthly Usage</div>
+          <div class="card-value">21.2h</div>
+          <div class="card-sub">2.6 days/mo</div>
+        </div>
+      </div>
+      <div class="tab-row">
+        <button class="tab active" onclick="showEmpTab(5,'balance',this)">Balance Trend</button>
+        <button class="tab" onclick="showEmpTab(5,'monthly',this)">Monthly Breakdown</button>
+        <button class="tab" onclick="showEmpTab(5,'lwop',this)">LWOP Analysis</button>
+      </div>
+      <div id="emp-5-balance" class="chart-panel active"><div class="chart-wrap"><canvas id="chart-5-balance"></canvas></div></div>
+      <div id="emp-5-monthly" class="chart-panel"><div class="chart-wrap"><canvas id="chart-5-monthly"></canvas></div><div class="warning-box"><h3>Months Exceeding Accrual</h3><ul><li>Apr 2025: used 96.0h (over by 5.2h)</li><li>Jul 2025: used 16.0h (over by 2.7h)</li><li>Oct 2025: used 33.0h (over by 22.9h)</li><li>Nov 2025: used 36.0h (over by 22.9h)</li><li>Dec 2025: used 16.0h (over by 2.7h)</li><li>Jan 2026: used 31.5h (over by 18.2h)</li></ul></div></div>
+      <div id="emp-5-lwop" class="chart-panel"><div class="chart-wrap"><canvas id="chart-5-lwop"></canvas></div><div class="callout"><h3>LWOP Summary</h3><p>Total: <strong>48.0h (6.0 days)</strong> across 2 month(s).</p></div></div>
+    </div>
+    <div id="emp-6" class="emp-detail" style="display:none">
+      <div class="detail-header">
+        <button onclick="backToSummary()" class="back-btn">&larr; Back to Summary</button>
+        <h2>Jackson Gabriel</h2>
+        <div class="subtitle">Plan: PTO &bull; Accrual Start: 2025-04-21</div>
+      </div>
+      <div class="cards">
+        <div class="card">
+          <div class="card-label">PTO Balance</div>
+          <div class="card-value negative">-19.9h</div>
+          <div class="card-sub">-2.5 days</div>
+        </div>
+        <div class="card">
+          <div class="card-label">Monthly Accrual</div>
+          <div class="card-value">0h</div>
+          <div class="card-sub">0.0 days/mo</div>
+        </div>
+        <div class="card">
+          <div class="card-label">LWOP Used</div>
+          <div class="card-value ">0.0h</div>
+          <div class="card-sub">0.0 days</div>
+        </div>
+        <div class="card">
+          <div class="card-label">Avg Monthly Usage</div>
+          <div class="card-value">13.2h</div>
+          <div class="card-sub">1.6 days/mo</div>
+        </div>
+      </div>
+      <div class="tab-row">
+        <button class="tab active" onclick="showEmpTab(6,'balance',this)">Balance Trend</button>
+        <button class="tab" onclick="showEmpTab(6,'monthly',this)">Monthly Breakdown</button>
+        <button class="tab" onclick="showEmpTab(6,'lwop',this)">LWOP Analysis</button>
+      </div>
+      <div id="emp-6-balance" class="chart-panel active"><div class="chart-wrap"><canvas id="chart-6-balance"></canvas></div></div>
+      <div id="emp-6-monthly" class="chart-panel"><div class="chart-wrap"><canvas id="chart-6-monthly"></canvas></div><div class="warning-box"><h3>Months Exceeding Accrual</h3><ul><li>Jun 2025: used 32.0h (over by 18.7h)</li><li>Aug 2025: used 20.0h (over by 6.7h)</li><li>Nov 2025: used 22.0h (over by 8.7h)</li><li>Dec 2025: used 18.0h (over by 4.7h)</li><li>Jan 2026: used 32.0h (over by 18.7h)</li><li>Mar 2026: used 15.0h (over by 15.0h)</li></ul></div></div>
+      <div id="emp-6-lwop" class="chart-panel"><div class="chart-wrap"><canvas id="chart-6-lwop"></canvas></div></div>
+    </div>
+    <div id="emp-7" class="emp-detail" style="display:none">
+      <div class="detail-header">
+        <button onclick="backToSummary()" class="back-btn">&larr; Back to Summary</button>
+        <h2>Ashley Dear</h2>
+        <div class="subtitle">Plan: PTO - 6 wks &bull; Accrual Start: 2025-12-31</div>
+      </div>
+      <div class="cards">
+        <div class="card">
+          <div class="card-label">PTO Balance</div>
+          <div class="card-value negative">-15.8h</div>
+          <div class="card-sub">-2.0 days</div>
+        </div>
+        <div class="card">
+          <div class="card-label">Monthly Accrual</div>
+          <div class="card-value">20.0h</div>
+          <div class="card-sub">2.5 days/mo</div>
+        </div>
+        <div class="card">
+          <div class="card-label">LWOP Used</div>
+          <div class="card-value ">0.0h</div>
+          <div class="card-sub">0.0 days</div>
+        </div>
+        <div class="card">
+          <div class="card-label">Avg Monthly Usage</div>
+          <div class="card-value">6.5h</div>
+          <div class="card-sub">0.8 days/mo</div>
+        </div>
+      </div>
+      <div class="tab-row">
+        <button class="tab active" onclick="showEmpTab(7,'balance',this)">Balance Trend</button>
+        <button class="tab" onclick="showEmpTab(7,'monthly',this)">Monthly Breakdown</button>
+        <button class="tab" onclick="showEmpTab(7,'lwop',this)">LWOP Analysis</button>
+      </div>
+      <div id="emp-7-balance" class="chart-panel active"><div class="chart-wrap"><canvas id="chart-7-balance"></canvas></div></div>
+      <div id="emp-7-monthly" class="chart-panel"><div class="chart-wrap"><canvas id="chart-7-monthly"></canvas></div><div class="warning-box"><h3>Months Exceeding Accrual</h3><ul><li>Feb 2026: used 48.0h (over by 28.0h)</li><li>Mar 2026: used 8.0h (over by 8.0h)</li></ul></div></div>
+      <div id="emp-7-lwop" class="chart-panel"><div class="chart-wrap"><canvas id="chart-7-lwop"></canvas></div></div>
+    </div>
+    <div id="emp-8" class="emp-detail" style="display:none">
+      <div class="detail-header">
+        <button onclick="backToSummary()" class="back-btn">&larr; Back to Summary</button>
+        <h2>Christopher Gomez</h2>
+        <div class="subtitle">Plan: PTO &bull; Accrual Start: 2024-01-01</div>
+      </div>
+      <div class="cards">
+        <div class="card">
+          <div class="card-label">PTO Balance</div>
+          <div class="card-value negative">-8.6h</div>
+          <div class="card-sub">-1.1 days</div>
+        </div>
+        <div class="card">
+          <div class="card-label">Monthly Accrual</div>
+          <div class="card-value">0h</div>
+          <div class="card-sub">0.0 days/mo</div>
+        </div>
+        <div class="card">
+          <div class="card-label">LWOP Used</div>
+          <div class="card-value ">0.0h</div>
+          <div class="card-sub">0.0 days</div>
+        </div>
+        <div class="card">
+          <div class="card-label">Avg Monthly Usage</div>
+          <div class="card-value">34.7h</div>
+          <div class="card-sub">4.3 days/mo</div>
+        </div>
+      </div>
+      <div class="tab-row">
+        <button class="tab active" onclick="showEmpTab(8,'balance',this)">Balance Trend</button>
+        <button class="tab" onclick="showEmpTab(8,'monthly',this)">Monthly Breakdown</button>
+        <button class="tab" onclick="showEmpTab(8,'lwop',this)">LWOP Analysis</button>
+      </div>
+      <div id="emp-8-balance" class="chart-panel active"><div class="chart-wrap"><canvas id="chart-8-balance"></canvas></div></div>
+      <div id="emp-8-monthly" class="chart-panel"><div class="chart-wrap"><canvas id="chart-8-monthly"></canvas></div><div class="warning-box"><h3>Months Exceeding Accrual</h3><ul><li>Apr 2025: used 286.0h (over by 21.9h)</li><li>May 2025: used 48.0h (over by 34.7h)</li><li>Jun 2025: used 32.0h (over by 8.7h)</li><li>Oct 2025: used 14.0h (over by 0.7h)</li><li>Jan 2026: used 16.0h (over by 2.7h)</li><li>Feb 2026: used 20.0h (over by 6.7h)</li></ul></div></div>
+      <div id="emp-8-lwop" class="chart-panel"><div class="chart-wrap"><canvas id="chart-8-lwop"></canvas></div></div>
+    </div>
+    <div id="emp-9" class="emp-detail" style="display:none">
+      <div class="detail-header">
+        <button onclick="backToSummary()" class="back-btn">&larr; Back to Summary</button>
+        <h2>Thomas Kersch</h2>
+        <div class="subtitle">Plan: PTO &bull; Accrual Start: 2024-01-01</div>
+      </div>
+      <div class="cards">
+        <div class="card">
+          <div class="card-label">PTO Balance</div>
+          <div class="card-value negative">-5.9h</div>
+          <div class="card-sub">-0.7 days</div>
+        </div>
+        <div class="card">
+          <div class="card-label">Monthly Accrual</div>
+          <div class="card-value">0h</div>
+          <div class="card-sub">0.0 days/mo</div>
+        </div>
+        <div class="card">
+          <div class="card-label">LWOP Used</div>
+          <div class="card-value ">0.0h</div>
+          <div class="card-sub">0.0 days</div>
+        </div>
+        <div class="card">
+          <div class="card-label">Avg Monthly Usage</div>
+          <div class="card-value">30.1h</div>
+          <div class="card-sub">3.8 days/mo</div>
+        </div>
+      </div>
+      <div class="tab-row">
+        <button class="tab active" onclick="showEmpTab(9,'balance',this)">Balance Trend</button>
+        <button class="tab" onclick="showEmpTab(9,'monthly',this)">Monthly Breakdown</button>
+        <button class="tab" onclick="showEmpTab(9,'lwop',this)">LWOP Analysis</button>
+      </div>
+      <div id="emp-9-balance" class="chart-panel active"><div class="chart-wrap"><canvas id="chart-9-balance"></canvas></div></div>
+      <div id="emp-9-monthly" class="chart-panel"><div class="chart-wrap"><canvas id="chart-9-monthly"></canvas></div><div class="warning-box"><h3>Months Exceeding Accrual</h3><ul><li>Aug 2025: used 60.0h (over by 46.7h)</li><li>Sep 2025: used 60.0h (over by 46.7h)</li><li>Dec 2025: used 34.9h (over by 21.6h)</li><li>Feb 2026: used 40.0h (over by 26.7h)</li></ul></div></div>
+      <div id="emp-9-lwop" class="chart-panel"><div class="chart-wrap"><canvas id="chart-9-lwop"></canvas></div></div>
+    </div>
+
+  <footer>Reflexive Concepts, LLC &bull; Data from Unanet &bull; 2026-03-31</footer>
+</div>
+
+<script>
+const empData = [{"name": "Rebecca Bullard", "labels": ["Apr 2025", "May 2025", "Jun 2025", "Jul 2025", "Aug 2025", "Sep 2025", "Oct 2025", "Nov 2025", "Dec 2025", "Jan 2026", "Feb 2026", "Mar 2026"], "balances": [-36.94, -37.27, -39.1, -33.93, -32.26, -51.84, -55.71, -58.12, -53.96, -47.79, -53.12, -79.12], "cumLwop": [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 17.5, 48.0, 55.0, 55.0, 55.0, 55.0], "moUsed": [117.0, 27.0, 28.5, 21.5, 33.0, 46.25, 28.0, 24.0, 21.5, 20.5, 32.0, 26.0], "moAccrued": [80.06, 26.67, 26.67, 26.67, 34.67, 26.67, 24.13, 21.59, 25.66, 26.67, 26.67, 0.0], "moLwop": [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 17.5, 30.5, 7.0, 0.0, 0.0, 0.0], "usedColors": ["#ef4444", "#ef4444", "#ef4444", "#f59e0b", "#f59e0b", "#ef4444", "#ef4444", "#ef4444", "#f59e0b", "#f59e0b", "#ef4444", "#ef4444"]}, {"name": "Leann Bortner", "labels": ["Apr 2025", "May 2025", "Jun 2025", "Jul 2025", "Aug 2025", "Sep 2025", "Oct 2025", "Nov 2025", "Dec 2025", "Jan 2026", "Feb 2026", "Mar 2026"], "balances": [-63.07, -69.4, -56.23, -68.06, -57.39, -79.72, -82.17, -75.0, -71.58, -77.91, -77.24, -77.24], "cumLwop": [0, 0, 0, 0, 0, 0, 15.05, 15.05, 15.05, 15.05, 15.05, 15.05], "moUsed": [483.5, 33.0, 23.5, 38.5, 16.0, 49.0, 26.95, 19.5, 23.25, 33.0, 26.0, 0.0], "moAccrued": [420.43, 26.67, 36.67, 26.67, 26.67, 26.67, 24.5, 26.67, 26.67, 26.67, 26.67, 0.0], "moLwop": [0, 0, 0, 0, 0, 0, 15.05, 0.0, 0.0, 0.0, 0.0, 0.0], "usedColors": ["#ef4444", "#ef4444", "#f59e0b", "#ef4444", "#f59e0b", "#ef4444", "#ef4444", "#f59e0b", "#f59e0b", "#ef4444", "#f59e0b", "#f59e0b"]}, {"name": "Daniel Ahn", "labels": ["Apr 2025", "May 2025", "Jun 2025", "Jul 2025", "Aug 2025", "Sep 2025", "Oct 2025", "Nov 2025", "Dec 2025", "Jan 2026", "Feb 2026", "Mar 2026"], "balances": [-52.33, -52.99, -39.66, -33.33, -42.99, -29.66, -16.33, -10.99, -29.66, -33.83, -47.49, -63.49], "cumLwop": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], "moUsed": [284.5, 14.0, 0.0, 7.0, 23.0, 0.0, 0.0, 8.0, 32.0, 17.5, 27.0, 16.0], "moAccrued": [232.17, 13.34, 13.33, 13.33, 13.34, 13.33, 13.33, 13.34, 13.33, 13.33, 13.34, 0.0], "moLwop": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], "usedColors": ["#ef4444", "#ef4444", "#f59e0b", "#f59e0b", "#ef4444", "#f59e0b", "#f59e0b", "#f59e0b", "#ef4444", "#ef4444", "#ef4444", "#ef4444"]}, {"name": "Cody Duffy", "labels": ["Apr 2025", "May 2025", "Jun 2025", "Jul 2025", "Aug 2025", "Sep 2025", "Oct 2025", "Nov 2025", "Dec 2025", "Jan 2026", "Feb 2026", "Mar 2026"], "balances": [0, 0, 0, 0, 0, 0, 0, 0, -71.15, -72.48, -56.81, -56.81], "cumLwop": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], "moUsed": [0, 0, 0, 0, 0, 0, 0, 0, 1.5, 28.0, 11.0, 0.0], "moAccrued": [0, 0, 0, 0, 0, 0, 0, 0, 0, 26.67, 26.67, 0.0], "moLwop": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], "usedColors": ["#f59e0b", "#f59e0b", "#f59e0b", "#f59e0b", "#f59e0b", "#f59e0b", "#f59e0b", "#f59e0b", "#ef4444", "#ef4444", "#f59e0b", "#f59e0b"]}, {"name": "Andreas Hochmuth", "labels": ["Apr 2025", "May 2025", "Jun 2025", "Jul 2025", "Aug 2025", "Sep 2025", "Oct 2025", "Nov 2025", "Dec 2025", "Jan 2026", "Feb 2026", "Mar 2026"], "balances": [-59.26, -45.93, -46.1, -43.26, -43.43, -37.1, -28.26, -34.93, -37.1, -38.51, -37.18, -37.18], "cumLwop": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], "moUsed": [169.0, 0.0, 13.5, 10.5, 13.5, 7.0, 4.5, 20.0, 15.5, 14.75, 12.0, 0.0], "moAccrued": [109.74, 13.33, 13.33, 13.34, 13.33, 13.33, 13.34, 13.33, 13.33, 13.34, 13.33, 0.0], "moLwop": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], "usedColors": ["#ef4444", "#f59e0b", "#ef4444", "#f59e0b", "#ef4444", "#f59e0b", "#f59e0b", "#ef4444", "#ef4444", "#ef4444", "#f59e0b", "#f59e0b"]}, {"name": "Larry Ingram", "labels": ["Apr 2025", "May 2025", "Jun 2025", "Jul 2025", "Aug 2025", "Sep 2025", "Oct 2025", "Nov 2025", "Dec 2025", "Jan 2026", "Feb 2026", "Mar 2026"], "balances": [-5.2, 8.14, 13.47, 10.8, 16.14, 18.97, -3.96, -26.87, -29.54, -47.71, -34.37, -34.37], "cumLwop": [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 45.0, 48.0, 48.0, 48.0, 48.0, 48.0], "moUsed": [96.0, 0.0, 8.0, 16.0, 8.0, 10.5, 33.0, 36.0, 16.0, 31.5, 0.0, 0.0], "moAccrued": [90.8, 13.34, 13.33, 13.33, 13.34, 13.33, 10.07, 13.09, 13.33, 13.33, 13.34, 0.0], "moLwop": [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 45.0, 3.0, 0.0, 0.0, 0.0, 0.0], "usedColors": ["#ef4444", "#f59e0b", "#f59e0b", "#ef4444", "#f59e0b", "#f59e0b", "#ef4444", "#ef4444", "#ef4444", "#ef4444", "#f59e0b", "#f59e0b"]}, {"name": "Jackson Gabriel", "labels": ["Apr 2025", "May 2025", "Jun 2025", "Jul 2025", "Aug 2025", "Sep 2025", "Oct 2025", "Nov 2025", "Dec 2025", "Jan 2026", "Feb 2026", "Mar 2026"], "balances": [4.8, 12.14, -6.53, 6.8, 0.14, 5.47, 13.8, 5.14, 0.47, -18.2, -4.86, -19.86], "cumLwop": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], "moUsed": [0.0, 6.0, 32.0, 0.0, 20.0, 8.0, 5.0, 22.0, 18.0, 32.0, 0.0, 15.0], "moAccrued": [4.8, 13.34, 13.33, 13.33, 13.34, 13.33, 13.33, 13.34, 13.33, 13.33, 13.34, 0.0], "moLwop": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], "usedColors": ["#f59e0b", "#f59e0b", "#ef4444", "#f59e0b", "#ef4444", "#f59e0b", "#f59e0b", "#ef4444", "#ef4444", "#ef4444", "#f59e0b", "#ef4444"]}, {"name": "Ashley Dear", "labels": ["Apr 2025", "May 2025", "Jun 2025", "Jul 2025", "Aug 2025", "Sep 2025", "Oct 2025", "Nov 2025", "Dec 2025", "Jan 2026", "Feb 2026", "Mar 2026"], "balances": [0, 0, 0, 0, 0, 0, 0, 0, 20.17, 20.17, -7.83, -15.83], "cumLwop": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], "moUsed": [0, 0, 0, 0, 0, 0, 0, 0, 1.5, 20.0, 48.0, 8.0], "moAccrued": [0, 0, 0, 0, 0, 0, 0, 0, 21.67, 20.0, 20.0, 0.0], "moLwop": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], "usedColors": ["#f59e0b", "#f59e0b", "#f59e0b", "#f59e0b", "#f59e0b", "#f59e0b", "#f59e0b", "#f59e0b", "#f59e0b", "#f59e0b", "#ef4444", "#ef4444"]}, {"name": "Christopher Gomez", "labels": ["Apr 2025", "May 2025", "Jun 2025", "Jul 2025", "Aug 2025", "Sep 2025", "Oct 2025", "Nov 2025", "Dec 2025", "Jan 2026", "Feb 2026", "Mar 2026"], "balances": [-21.91, -56.57, -65.24, -51.91, -38.57, -25.24, -25.91, -12.57, 0.76, -1.91, -8.57, -8.57], "cumLwop": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], "moUsed": [286.0, 48.0, 32.0, 0.0, 0.0, 0.0, 14.0, 0.0, 0.0, 16.0, 20.0, 0.0], "moAccrued": [264.09, 13.34, 23.33, 13.33, 13.34, 13.33, 13.33, 13.34, 13.33, 13.33, 13.34, 0.0], "moLwop": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], "usedColors": ["#ef4444", "#ef4444", "#ef4444", "#f59e0b", "#f59e0b", "#f59e0b", "#ef4444", "#f59e0b", "#f59e0b", "#ef4444", "#ef4444", "#f59e0b"]}, {"name": "Thomas Kersch", "labels": ["Apr 2025", "May 2025", "Jun 2025", "Jul 2025", "Aug 2025", "Sep 2025", "Oct 2025", "Nov 2025", "Dec 2025", "Jan 2026", "Feb 2026", "Mar 2026"], "balances": [78.19, 91.53, 96.36, 109.69, 63.03, 16.36, 18.09, 29.03, 7.46, 20.79, -5.87, -5.87], "cumLwop": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], "moUsed": [143.3, 0.0, 8.5, 0.0, 60.0, 60.0, 11.6, 2.4, 34.9, 0.0, 40.0, 0.0], "moAccrued": [221.49, 13.34, 13.33, 13.33, 13.34, 13.33, 13.33, 13.34, 13.33, 13.33, 13.34, 0.0], "moLwop": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], "usedColors": ["#f59e0b", "#f59e0b", "#f59e0b", "#f59e0b", "#ef4444", "#ef4444", "#f59e0b", "#f59e0b", "#ef4444", "#f59e0b", "#ef4444", "#f59e0b"]}];
+const charts = {};
+
+function backToSummary() {
+  document.getElementById('summary-view').style.display = 'block';
+  document.querySelectorAll('.emp-detail').forEach(d => d.style.display = 'none');
+}
+
+function showEmployee(idx) {
+  document.getElementById('summary-view').style.display = 'none';
+  document.querySelectorAll('.emp-detail').forEach(d => d.style.display = 'none');
+  document.getElementById('emp-' + idx).style.display = 'block';
+
+  // Initialize charts if not already done
+  if (!charts[idx]) {
+    charts[idx] = {};
+    const d = empData[idx];
+    initCharts(idx, d);
+  }
+}
+
+function showEmpTab(idx, tab, btn) {
+  ['balance','monthly','lwop'].forEach(t => {
+    document.getElementById('emp-' + idx + '-' + t).classList.remove('active');
+  });
+  document.getElementById('emp-' + idx + '-' + tab).classList.add('active');
+  btn.parentElement.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  btn.classList.add('active');
+}
+
+const zeroLinePlugin = {
+  id: 'zeroLine',
+  afterDraw(chart) {
+    const yScale = chart.scales.y;
+    if (!yScale) return;
+    const ctx = chart.ctx;
+    const yZero = yScale.getPixelForValue(0);
+    if (yZero < chart.chartArea.top || yZero > chart.chartArea.bottom) return;
+    ctx.save();
+    ctx.strokeStyle = '#94a3b8';
+    ctx.lineWidth = 1;
+    ctx.setLineDash([6, 4]);
+    ctx.beginPath();
+    ctx.moveTo(chart.chartArea.left, yZero);
+    ctx.lineTo(chart.chartArea.right, yZero);
+    ctx.stroke();
+    ctx.restore();
+  }
+};
+
+function initCharts(idx, d) {
+  // Balance Trend
+  charts[idx].balance = new Chart(document.getElementById('chart-' + idx + '-balance'), {
+    type: 'line',
+    data: {
+      labels: d.labels,
+      datasets: [
+        {
+          label: 'PTO Balance (hrs)',
+          data: d.balances,
+          borderColor: '#ef4444',
+          backgroundColor: 'rgba(239,68,68,0.08)',
+          fill: true,
+          tension: 0.3,
+          pointRadius: 4,
+          pointBackgroundColor: '#ef4444',
+          borderWidth: 2.5
+        },
+        {
+          label: 'Monthly LWOP (hrs)',
+          data: d.moLwop,
+          type: 'bar',
+          backgroundColor: 'rgba(124,58,237,0.35)',
+          borderColor: '#7c3aed',
+          borderWidth: 1,
+          barPercentage: 0.4,
+          order: 1
+        }
+      ]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { position: 'top' } },
+      scales: {
+        y: { title: { display: true, text: 'Hours' }, grid: { color: '#f1f5f9' } },
+        x: { grid: { display: false } }
+      }
+    },
+    plugins: [zeroLinePlugin]
+  });
+
+  // Monthly Breakdown
+  charts[idx].monthly = new Chart(document.getElementById('chart-' + idx + '-monthly'), {
+    type: 'bar',
+    data: {
+      labels: d.labels,
+      datasets: [
+        { label: 'PTO Accrued', data: d.moAccrued, backgroundColor: '#3b82f6', borderRadius: 4, barPercentage: 0.7, categoryPercentage: 0.8 },
+        { label: 'PTO Used', data: d.moUsed, backgroundColor: d.usedColors, borderRadius: 4, barPercentage: 0.7, categoryPercentage: 0.8 },
+        { label: 'LWOP', data: d.moLwop, backgroundColor: 'rgba(124,58,237,0.5)', borderColor: '#7c3aed', borderWidth: 1, borderRadius: 4, barPercentage: 0.7, categoryPercentage: 0.8 }
+      ]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { position: 'top' } },
+      scales: {
+        y: { title: { display: true, text: 'Hours' }, grid: { color: '#f1f5f9' }, beginAtZero: true },
+        x: { grid: { display: false } }
+      }
+    }
+  });
+
+  // LWOP Analysis
+  charts[idx].lwop = new Chart(document.getElementById('chart-' + idx + '-lwop'), {
+    type: 'bar',
+    data: {
+      labels: d.labels,
+      datasets: [
+        { label: 'Monthly LWOP (hrs)', data: d.moLwop, backgroundColor: 'rgba(124,58,237,0.45)', borderColor: '#7c3aed', borderWidth: 1, borderRadius: 4 },
+        { label: 'Cumulative LWOP (hrs)', data: d.cumLwop, type: 'line', borderColor: '#7c3aed', backgroundColor: 'rgba(124,58,237,0.08)', fill: true, tension: 0.3, pointRadius: 4, pointBackgroundColor: '#7c3aed', borderWidth: 2, yAxisID: 'y1' }
+      ]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { position: 'top' } },
+      scales: {
+        y: { title: { display: true, text: 'Monthly (hrs)' }, grid: { color: '#f1f5f9' }, beginAtZero: true },
+        y1: { position: 'right', title: { display: true, text: 'Cumulative (hrs)' }, grid: { display: false }, beginAtZero: true },
+        x: { grid: { display: false } }
+      }
+    }
+  });
+}
+</script>
+</body>
+</html>
